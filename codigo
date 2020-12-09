@@ -1,0 +1,100 @@
+Deber 6 
+
+
+#include<LiquidCrystal.h>
+#include<MsTimer2.h>
+
+
+LiquidCrystal lcd (13,12,11,10,9,8);
+
+const int btnm = 5; //minutos
+const int btnh = 6; // horas
+const int led=7;
+
+String datohora;
+String datominutos;
+
+
+int segundos=0;
+int minutos=0;
+int horas=0;
+int horaa=60;
+int minutoss=60;
+int on=0; 
+int j=0;
+
+void setup() {
+  lcd.begin(16,2);
+  MsTimer2::set(1000,reloj);
+  MsTimer2::start();
+  Serial.begin(9600);
+  pinMode(led,OUTPUT);
+  attachInterrupt(0,alarma,LOW);
+  pinMode(btnm, INPUT);
+  pinMode(btnh, INPUT);
+}
+void loop() {
+  if(on==1){
+    if(Serial.available()>0){
+      datohora=Serial.readString();
+      horaa=datohora.toInt();
+    }
+  }
+  if(on==2){
+     if(Serial.available()>0){
+      datominutos=Serial.readString();
+      minutoss=datominutos.toInt();
+    }
+  }
+  if(horaa==horas && minutoss==minutos){
+    while(j<10){
+      digitalWrite(led,HIGH);
+      delay(500);
+      digitalWrite(led,LOW);
+      delay(500);
+      j++;
+    }
+  }
+}
+void reloj(){
+  if(segundos<59){
+    segundos++;
+  }else{
+    segundos=0;
+    if(minutos<59)
+      minutos++;
+      else{
+        minutos=0;
+        if(horas<24)
+          horas++;
+          if(horas==24){
+          }
+        else
+          horas=0;  
+      }
+  }
+  if (digitalRead(btnh)==LOW) {
+    horas++;
+  }
+  if (digitalRead(btnm)==LOW) {
+    minutos++;
+  }
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(String(horas)+String(" : ")+String(minutos)+String(" : ")+String(segundos));
+}
+void alarma(){
+  switch(on){
+    case 0:
+      Serial.println("Alarma");
+      Serial.println("Ingrese las horas ");
+      on++;
+      j=0;
+    break;
+    case 1:
+      Serial.println("");
+      Serial.println("Ingrese los minutos ");
+      on++;
+    break;
+  }
+}
